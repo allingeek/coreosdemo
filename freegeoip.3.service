@@ -1,0 +1,17 @@
+[Unit]
+Description=Freegeoip Service via Docker
+Author=allingeek
+After=docker.service
+
+[Service]
+Restart=always
+ExecStart=/bin/bash -c '/usr/bin/docker start -a freegeoip3 || /usr/bin/docker run -name freegeoip3 -d -p 8080:8080 allingeek/docker-freegeoip'
+ExecStop=/usr/bin/docker stop freegeoip3
+
+[Install]
+WantedBy=local.target
+
+[X-Fleet]
+X-Conflicts=freegeoip.*.service
+
+
