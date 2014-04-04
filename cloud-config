@@ -1,0 +1,29 @@
+#cloud-config
+
+coreos:
+  etcd:
+    # generate a new token for each unique cluster from https://discovery.etcd.io/new
+    discovery: https://discovery.etcd.io/<token>
+    # multi-region and multi-cloud deployments need to use $public_ipv4
+    addr: $private_ipv4:4001
+    peer-addr: $private_ipv4:7001
+  units:
+    - name: etcd.service
+      command: start
+    - name: fleet.service
+      command: start
+    # Lets include our custom unit to launch allingeek/docker-freegeoip
+    - name: freegeoip.service
+      content: |
+        [Unit]
+        Description=Freegeoip Service via Docker
+        Author=allingeek
+        After=docker.service
+
+        [Service]
+        Restart=always
+        ExecStart=/bin/bash -c '/usr/bin/docker start -a freegeoip || /usr/bin/docker run -name freegeoip -d -p 8080:8080 allingeek/docker-freegeoip'
+        ExecStop=/usr/bin/docker stop freegeoip
+
+        [Install]
+        WantedBy=local.target
